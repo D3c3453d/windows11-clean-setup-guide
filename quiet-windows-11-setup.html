@@ -1,0 +1,518 @@
+<title>Quiet Windows 11 Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{
+  --ground:#F2F4F1; --surface:#FFFFFF; --sunk:#E9ECE8; --ink:#16201C; --muted:#56615B; --rule:#D5DBD6;
+  --accent:#0B6E82; --accent-ink:#FFFFFF;
+  --do:#1E7A46; --do-bg:#E3F2E8; --opt:#8F5200; --opt-bg:#FBF0DD; --dont:#B3261E; --dont-bg:#FBE7E5; --warn:#7A5B00;
+  --code-bg:#1B2421; --code-ink:#DCE6E1;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#0F1312; --surface:#161C1A; --sunk:#1D2422; --ink:#E4EAE6; --muted:#98A49E; --rule:#2B3431;
+    --accent:#5CC2D6; --accent-ink:#0F1312;
+    --do:#62CC8E; --do-bg:#17291F; --opt:#E6A94F; --opt-bg:#2B2114; --dont:#F07A70; --dont-bg:#2E1917; --warn:#E6C35C;
+    --code-bg:#0A0E0D; --code-ink:#DCE6E1;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#0F1312; --surface:#161C1A; --sunk:#1D2422; --ink:#E4EAE6; --muted:#98A49E; --rule:#2B3431;
+  --accent:#5CC2D6; --accent-ink:#0F1312;
+  --do:#62CC8E; --do-bg:#17291F; --opt:#E6A94F; --opt-bg:#2B2114; --dont:#F07A70; --dont-bg:#2E1917; --warn:#E6C35C;
+  --code-bg:#0A0E0D; --code-ink:#DCE6E1;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font:15px/1.55 var(--sans);padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:860px;margin:0 auto}
+h1,h2{font-family:var(--cond);text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem);line-height:1.1;letter-spacing:-.01em}
+h2{font-size:1.35rem;line-height:1.2}
+p{margin:0}
+code,kbd{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.08em .35em;border-radius:3px;overflow-wrap:anywhere}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{padding-block:28px 18px;display:grid;gap:12px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:.86rem}
+.meta span{font-family:var(--mono);font-size:.8rem}
+.lede{max-width:65ch;color:var(--ink)}
+.keeps{display:flex;flex-wrap:wrap;gap:6px}
+.keep{font-size:.78rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--do);color:var(--do);border-radius:999px;padding:2px 10px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ground);border-bottom:1px solid var(--rule);padding-block:10px;display:grid;gap:8px}
+.progress-row{display:flex;align-items:center;gap:12px}
+.meter{flex:1;height:8px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.count{font-family:var(--mono);font-size:.82rem;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+.nav a{flex:none;text-decoration:none;color:var(--ink);font-size:.8rem;border:1px solid var(--rule);background:var(--surface);border-radius:4px;padding:3px 8px;font-variant-numeric:tabular-nums}
+.nav a.done{border-color:var(--do);color:var(--do)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted)}
+
+section.step{margin-top:28px;scroll-margin-top:110px}
+.sec-head{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:10px}
+.sec-no{font-family:var(--mono);font-size:.85rem;color:var(--accent);font-weight:500}
+.sec-head h2{flex:1}
+.sec-count{font-family:var(--mono);font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.why{color:var(--muted);max-width:65ch;margin-bottom:10px;font-size:.93rem}
+
+ul.items{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+li.item{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:start}
+li.item input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--accent);cursor:pointer}
+li.item label{cursor:pointer;font-weight:500}
+li.item .body{grid-column:2;display:grid;gap:6px;font-size:.92rem;color:var(--muted);min-width:0}
+li.item.checked{background:var(--sunk)}
+li.item.checked label{text-decoration:line-through;text-decoration-color:var(--muted);color:var(--muted)}
+.tag{display:inline-block;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:3px;padding:1px 6px;margin-right:6px;vertical-align:2px}
+.t-do{background:var(--do-bg);color:var(--do)}
+.t-opt{background:var(--opt-bg);color:var(--opt)}
+.warn{color:var(--warn);font-weight:600}
+
+.donts{margin-top:10px;border-left:3px solid var(--dont);background:var(--dont-bg);border-radius:0 6px 6px 0;padding:10px 12px}
+.donts strong{color:var(--dont);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+.donts ul{margin:6px 0 0;padding-left:18px;display:grid;gap:3px;font-size:.9rem}
+
+.code{position:relative;min-width:0}
+.code pre{margin:0;background:var(--code-bg);color:var(--code-ink);font:12.5px/1.5 var(--mono);padding:12px 12px 12px 12px;border-radius:5px;overflow:auto;max-height:18rem;white-space:pre}
+.code button{position:absolute;top:6px;right:6px;font:600 .72rem var(--sans);letter-spacing:.04em;text-transform:uppercase;background:var(--accent);color:var(--accent-ink);border:0;border-radius:3px;padding:4px 8px;cursor:pointer}
+
+table.mini{border-collapse:collapse;font-size:.86rem;width:100%}
+.tbl{overflow-x:auto}
+table.mini td,table.mini th{border-bottom:1px solid var(--rule);padding:4px 8px 4px 0;text-align:left;vertical-align:top}
+table.mini th{color:var(--ink);font-weight:600}
+
+.region{background:var(--surface);border:1px solid var(--accent);border-radius:6px;padding:12px 14px;display:grid;gap:6px;font-size:.92rem;margin-bottom:10px}
+.region b{color:var(--accent)}
+footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:14px;color:var(--muted);font-size:.85rem;display:grid;gap:8px}
+footer ul{margin:0;padding-left:18px;display:grid;gap:2px}
+.reset{justify-self:start;background:none;border:1px solid var(--rule);color:var(--muted);border-radius:4px;padding:5px 10px;font:500 .82rem var(--sans);cursor:pointer}
+.reset.arm{border-color:var(--dont);color:var(--dont)}
+.applist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:0 18px}
+.applist li{display:grid;grid-template-columns:1.8em 1fr auto;gap:0 8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--rule);font-size:.88rem}
+.applist .no{font-family:var(--mono);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.applist .app{color:var(--ink);font-weight:500}
+.applist .note{grid-column:2 / 4;font-size:.8rem;color:var(--muted)}
+.v{font-size:.66rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.v-rm{background:var(--do-bg);color:var(--do)}
+.v-keep{background:var(--dont-bg);color:var(--dont)}
+.v-opt{background:var(--opt-bg);color:var(--opt)}
+@media (prefers-reduced-motion: reduce){.meter i{transition:none}}
+@media (max-width:520px){body{font-size:14.5px}.sec-head{gap:8px}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <h1>Quiet Windows 11 Setup</h1>
+  <div class="meta">Windows 11 Pro <span>25H2 · build 26200.x</span> Local account · EEA device region · <span>researched 2026-09-27</span></div>
+  <p class="lede">A clean install for programming and gaming with minimal bloatware, telemetry, ads and AI. Everything uses built-in tools: Settings, <code>gpedit.msc</code>, policy registry keys and PowerShell. Tick the steps as you go; your ticks are saved in this browser.</p>
+  <div class="keeps"><span class="keep">Windows Update stays on</span><span class="keep">Defender stays on</span><span class="keep">Store stays on</span></div>
+</header>
+
+<div class="bar">
+  <div class="progress-row"><div class="meter" aria-hidden="true"><i id="meter"></i></div><span class="count" id="count">0 / 0</span></div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="legend"><span><span class="tag t-do">Do</span>recommended</span><span><span class="tag t-opt">Optional</span>your call</span><span><span class="warn">⚠</span> not fully confirmed by Microsoft docs, so the audit checks it</span></div>
+</div>
+
+<section class="step" id="s0" data-title="Prep">
+  <div class="sec-head"><span class="sec-no">00</span><h2>Before you start</h2><span class="sec-count"></span></div>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c0-1"><label for="c0-1"><span class="tag t-do">Do</span>Back up your files and note your Wi-Fi password</label></li>
+    <li class="item"><input type="checkbox" id="c0-2"><label for="c0-2"><span class="tag t-do">Do</span>Firmware: TPM 2.0, Secure Boot, VT-x/SVM, IOMMU, XMP/EXPO, Resizable BAR</label>
+      <div class="body"><p>Intel PTT or AMD fTPM, UEFI mode (CSM off), VT-d or AMD-Vi. Update an old BIOS first. Anti-cheat needs TPM and Secure Boot.</p></div></li>
+    <li class="item"><input type="checkbox" id="c0-3"><label for="c0-3"><span class="tag t-do">Do</span>Put the network driver (plus chipset and GPU drivers) on a USB stick</label>
+      <div class="body"><p>Setup runs offline, so you may need the LAN or Wi-Fi driver afterwards.</p></div></li>
+    <li class="item"><input type="checkbox" id="c0-4"><label for="c0-4"><span class="tag t-do">Do</span>Make the USB stick with the Media Creation Tool, or download the 25H2 ISO</label>
+      <div class="body"><p>Download from <code>microsoft.com/software-download/windows11</code>. Don't use modified ISOs. 24H2 Home/Pro stops getting updates on 13 Oct 2026. 26H2 will arrive later as a small update.</p></div></li>
+  </ul>
+</section>
+
+<section class="step" id="s1" data-title="Answer file">
+  <div class="sec-head"><span class="sec-no">01</span><h2>Build autounattend.xml</h2><span class="sec-count"></span></div>
+  <p class="why">The old local-account bypasses (<code>oobe\bypassnro</code>, <code>ms-cxh:localonly</code>) no longer work. An answer file that pre-defines the local account does work on retail 25H2 Pro. Generator: <a href="https://schneegans.de/windows/unattend-generator/" target="_blank" rel="noopener">schneegans.de/windows/unattend-generator</a></p>
+  <div class="region"><p><b>Region = Ireland (EEA).</b> Setup saves the region you pick as the device region, and the EU's DMA rules then unlock extra options: Bing can be removed from Search, Edge can be uninstalled, the Widgets feed can be turned off, almost all inbox apps can be removed, and the automatic Microsoft 365 Copilot install doesn't apply.</p><p>Changing Settings → Region later doesn't change the device region. Set your real country for Store, billing and formats after install (step 03).</p></div>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c1-1"><label for="c1-1"><span class="tag t-do">Do</span>Home location: Ireland. Language, keyboard and time zone: your own</label></li>
+    <li class="item"><input type="checkbox" id="c1-2"><label for="c1-2"><span class="tag t-do">Do</span>Edition: Pro, generic product key</label>
+      <div class="body"><p>This forces Pro even if the laptop's firmware holds a Home key. Leave the "bypass requirements" options off.</p></div></li>
+    <li class="item"><input type="checkbox" id="c1-3"><label for="c1-3"><span class="tag t-do">Do</span>Partitioning: interactive</label></li>
+    <li class="item"><input type="checkbox" id="c1-4"><label for="c1-4"><span class="tag t-do">Do</span>Local admin account with a password that never expires, set to log on to the first admin account</label></li>
+    <li class="item"><input type="checkbox" id="c1-5"><label for="c1-5"><span class="tag t-do">Do</span>Skip Wi-Fi setup and set Express settings to "Disable all"</label></li>
+    <li class="item"><input type="checkbox" id="c1-6"><label for="c1-6"><span class="tag t-do">Do</span>System tweaks: tick exactly the "Tick" options</label>
+      <div class="body"><p>All 26 options, in the generator's order. 12 to tick, 7 to leave unticked, 7 your call (suggestion in the note). Also optional: show file extensions.</p><ol class="applist"><li><span class="no">1</span><span class="app">Disable Windows Update</span><span class="v v-keep">Leave</span><span class="note">creates a task that pauses updates every week, so you&#x27;d stop getting security fixes</span></li><li><span class="no">2</span><span class="app">Disable User Account Control (UAC)</span><span class="v v-keep">Leave</span><span class="note">UAC is what keeps your admin account safe; programs get admin rights only after you click &quot;Yes&quot;</span></li><li><span class="no">3</span><span class="app">Disable Smart App Control</span><span class="v v-keep">Leave</span><span class="note">can&#x27;t be turned back on; it usually switches itself off on developer PCs, and you can still turn it off later in Windows Security</span></li><li><span class="no">4</span><span class="app">Disable SmartScreen in Windows and Edge</span><span class="v v-keep">Leave</span><span class="note">security, which you want to keep</span></li><li><span class="no">5</span><span class="app">Disable Fast Startup</span><span class="v v-rm">Tick</span><span class="note">avoids stale drivers after shutdown and dual-boot or GPU driver update problems; saves only a second or two on an SSD</span></li><li><span class="no">6</span><span class="app">Disable System Protection / System Restore</span><span class="v v-keep">Leave</span><span class="note">the guide uses restore points (§3)</span></li><li><span class="no">7</span><span class="app">Enable long paths</span><span class="v v-rm">Tick</span><span class="note">needed for programming (node_modules, deep Git repos)</span></li><li><span class="no">8</span><span class="app">Enable Remote Desktop services (RDP)</span><span class="v v-opt">Your call</span><span class="note">leave unticked unless you connect into this PC from another device</span></li><li><span class="no">9</span><span class="app">Harden ACLs</span><span class="v v-opt">Your call</span><span class="note">small gain on a single-user PC; some old installers or games expect to write to C:\. Suggest leaving it unticked</span></li><li><span class="no">10</span><span class="app">Delete hidden junction points</span><span class="v v-opt">Your call</span><span class="note">cosmetic; old software may rely on paths like My Documents. Suggest leaving it unticked</span></li><li><span class="no">11</span><span class="app">Allow execution of PowerShell script files</span><span class="v v-rm">Tick</span><span class="note">RemoteSigned; you need this for programming</span></li><li><span class="no">12</span><span class="app">Do not update Last Access Time stamp</span><span class="v v-opt">Your call</span><span class="note">Windows already turns this off on drives over 128 GB. Suggest leaving it unticked</span></li><li><span class="no">13</span><span class="app">Prevent Windows Update from rebooting your computer</span><span class="v v-keep">Leave</span><span class="note">a workaround task; set active hours instead (§8)</span></li><li><span class="no">14</span><span class="app">Turn off system sounds</span><span class="v v-opt">Your call</span><span class="note">personal taste</span></li><li><span class="no">15</span><span class="app">Disable app suggestions / Content Delivery Manager</span><span class="v v-rm">Tick</span><span class="note">stops silent installs of &quot;suggested&quot; apps; Pro ignores the official policy for this. Side effect: greyed-out &quot;Manage devices&quot; under Mobile devices</span></li><li><span class="no">16</span><span class="app">Prevent device encryption</span><span class="v v-rm">Tick</span><span class="note">you turn on BitLocker yourself in §3 and save the recovery key</span></li><li><span class="no">17</span><span class="app">Hide Edge First Run Experience</span><span class="v v-rm">Tick</span><span class="note">harmless; saves some clicks</span></li><li><span class="no">18</span><span class="app">Disable Edge Startup Boost and Background mode</span><span class="v v-rm">Tick</span><span class="note">stops Edge running in the background</span></li><li><span class="no">19</span><span class="app">Make Edge uninstallable</span><span class="v v-keep">Leave</span><span class="note">not needed with the Ireland region; the generator warns it causes Windows Update problems</span></li><li><span class="no">20</span><span class="app">Disable the Enhance Pointer Precision mouse setting</span><span class="v v-rm">Tick</span><span class="note">no mouse acceleration; consistent aim in shooters</span></li><li><span class="no">21</span><span class="app">Delete empty C:\Windows.old folder</span><span class="v v-rm">Tick</span><span class="note">harmless cleanup</span></li><li><span class="no">22</span><span class="app">Disable automatic sign-on of last user after a restart</span><span class="v v-rm">Tick</span><span class="note">you sign in yourself after update restarts; doesn&#x27;t affect the one-time sign-in at the end of setup</span></li><li><span class="no">23</span><span class="app">Disable Windows Platform Binary Table (WPBT) execution</span><span class="v v-rm">Tick</span><span class="note">blocks firmware from injecting vendor programs (e.g. ASUS Armoury Crate) into Windows on every boot</span></li><li><span class="no">24</span><span class="app">Prevent download and installation of applications associated with certain hardware devices</span><span class="v v-rm">Tick</span><span class="note">stops vendor apps (LG monitors, Razer/Logitech mice) auto-installing; install what you want yourself</span></li><li><span class="no">25</span><span class="app">Audit process creation events</span><span class="v v-opt">Your call</span><span class="note">logs every program start; noise for most people. Suggest leaving it unticked</span></li><li><span class="no">26</span><span class="app">Include command line in log events</span><span class="v v-opt">Your call</span><span class="note">only with the previous option; would log passwords/API tokens from command lines. Leave it unticked</span></li></ol></div></li>
+    <li class="item"><input type="checkbox" id="c1-9"><label for="c1-9"><span class="tag t-do">Do</span>Start menu and taskbar: tick "Do not show Bing results when searching in the Start menu or the search box" and "Disable widgets"</label>
+      <div class="body"><p>The Bing option sets the Pro-valid policy <code>DisableSearchBoxSuggestions</code>, which keeps Start search local even if an update brings the Bing app back or resets the Settings toggle. The only side effect: File Explorer's search box stops showing recent searches. Optional: hide the Task view button, left-align the taskbar.</p></div></li>
+    <li class="item"><input type="checkbox" id="c1-7"><label for="c1-7"><span class="tag t-do">Do</span>Remove bloatware: tick exactly the "Tick" apps</label>
+      <div class="body"><p>All 59 generator apps, in the generator's order. 38 to tick, 14 to leave unticked, 7 your call.</p><ol class="applist"><li><span class="no">1</span><span class="app">3D Viewer</span><span class="v v-rm">Tick</span><span class="note">retired</span></li><li><span class="no">2</span><span class="app">Bing Search</span><span class="v v-rm">Tick</span><span class="note">web results in Start search</span></li><li><span class="no">3</span><span class="app">Calculator</span><span class="v v-keep">Leave</span></li><li><span class="no">4</span><span class="app">Camera</span><span class="v v-keep">Leave</span><span class="note">tiny; handy for testing the webcam</span></li><li><span class="no">5</span><span class="app">Clipchamp</span><span class="v v-rm">Tick</span></li><li><span class="no">6</span><span class="app">Clock</span><span class="v v-opt">Your call</span><span class="note">remove if you don&#x27;t use timers/alarms</span></li><li><span class="no">7</span><span class="app">Copilot</span><span class="v v-rm">Tick</span></li><li><span class="no">8</span><span class="app">Cortana</span><span class="v v-rm">Tick</span><span class="note">retired</span></li><li><span class="no">9</span><span class="app">Dev Home</span><span class="v v-rm">Tick</span><span class="note">retired in 2025</span></li><li><span class="no">10</span><span class="app">Facial recognition (Windows Hello)</span><span class="v v-opt">Your call</span><span class="note">keep only if you have an IR camera for face sign-in</span></li><li><span class="no">11</span><span class="app">Family</span><span class="v v-rm">Tick</span><span class="note">needs a Microsoft account</span></li><li><span class="no">12</span><span class="app">Feedback Hub</span><span class="v v-rm">Tick</span></li><li><span class="no">13</span><span class="app">Game Assist (beta)</span><span class="v v-rm">Tick</span><span class="note">Edge overlay that runs on Game Bar, which you&#x27;re removing</span></li><li><span class="no">14</span><span class="app">Get Help</span><span class="v v-rm">Tick</span></li><li><span class="no">15</span><span class="app">Handwriting (all languages) (beta)</span><span class="v v-keep">Leave</span><span class="note">small; leave it</span></li><li><span class="no">16</span><span class="app">Internet Explorer</span><span class="v v-rm">Tick</span><span class="note">already switched off in Windows 11</span></li><li><span class="no">17</span><span class="app">Mail and Calendar</span><span class="v v-rm">Tick</span><span class="note">retired</span></li><li><span class="no">18</span><span class="app">Maps</span><span class="v v-rm">Tick</span></li><li><span class="no">19</span><span class="app">Math Input Panel</span><span class="v v-rm">Tick</span><span class="note">old pen tool</span></li><li><span class="no">20</span><span class="app">Media Features</span><span class="v v-keep">Leave</span><span class="note">some games/apps need these media components</span></li><li><span class="no">21</span><span class="app">Microsoft Store</span><span class="v v-keep">Leave</span><span class="note">required</span></li><li><span class="no">22</span><span class="app">Mixed Reality</span><span class="v v-rm">Tick</span><span class="note">retired</span></li><li><span class="no">23</span><span class="app">Movies &amp; TV</span><span class="v v-rm">Tick</span><span class="note">retired</span></li><li><span class="no">24</span><span class="app">News</span><span class="v v-rm">Tick</span></li><li><span class="no">25</span><span class="app">Notepad (modern)</span><span class="v v-keep">Leave</span><span class="note">its AI features get turned off by policy (§7)</span></li><li><span class="no">26</span><span class="app">Office 365</span><span class="v v-rm">Tick</span><span class="note">the Microsoft 365 Copilot app</span></li><li><span class="no">27</span><span class="app">OneDrive</span><span class="v v-rm">Tick</span><span class="note">keep only if you want cloud sync</span></li><li><span class="no">28</span><span class="app">OneNote</span><span class="v v-rm">Tick</span></li><li><span class="no">29</span><span class="app">OneSync</span><span class="v v-rm">Tick</span><span class="note">mail/contacts sync engine, unused once Mail and People are gone</span></li><li><span class="no">30</span><span class="app">OpenSSH Client</span><span class="v v-keep">Leave</span><span class="note">needed for programming (Git over SSH)</span></li><li><span class="no">31</span><span class="app">Outlook for Windows</span><span class="v v-rm">Tick</span></li><li><span class="no">32</span><span class="app">Paint</span><span class="v v-keep">Leave</span><span class="note">its AI features get turned off by policy (§7)</span></li><li><span class="no">33</span><span class="app">Paint 3D</span><span class="v v-rm">Tick</span><span class="note">retired</span></li><li><span class="no">34</span><span class="app">People</span><span class="v v-rm">Tick</span><span class="note">retired</span></li><li><span class="no">35</span><span class="app">Photos</span><span class="v v-keep">Leave</span></li><li><span class="no">36</span><span class="app">Power Automate</span><span class="v v-rm">Tick</span></li><li><span class="no">37</span><span class="app">PowerShell 2.0</span><span class="v v-rm">Tick</span><span class="note">obsolete; attackers use it to get around security logging</span></li><li><span class="no">38</span><span class="app">PowerShell ISE</span><span class="v v-opt">Your call</span><span class="note">remove if you&#x27;ll use VS Code</span></li><li><span class="no">39</span><span class="app">Quick Assist</span><span class="v v-rm">Tick</span><span class="note">keep only if someone helps you remotely</span></li><li><span class="no">40</span><span class="app">Recall</span><span class="v v-rm">Tick</span></li><li><span class="no">41</span><span class="app">Remote Desktop Client</span><span class="v v-keep">Leave</span></li><li><span class="no">42</span><span class="app">Skype</span><span class="v v-rm">Tick</span><span class="note">retired</span></li><li><span class="no">43</span><span class="app">Snipping Tool</span><span class="v v-keep">Leave</span><span class="note">needed for the Win+Shift+S screenshot shortcut</span></li><li><span class="no">44</span><span class="app">Solitaire Collection</span><span class="v v-rm">Tick</span></li><li><span class="no">45</span><span class="app">Speech (all languages) (beta)</span><span class="v v-keep">Leave</span><span class="note">Narrator and text-to-speech need it</span></li><li><span class="no">46</span><span class="app">Steps Recorder</span><span class="v v-rm">Tick</span><span class="note">deprecated</span></li><li><span class="no">47</span><span class="app">Sticky Notes</span><span class="v v-opt">Your call</span></li><li><span class="no">48</span><span class="app">Teams</span><span class="v v-rm">Tick</span></li><li><span class="no">49</span><span class="app">Tips</span><span class="v v-rm">Tick</span></li><li><span class="no">50</span><span class="app">To Do</span><span class="v v-rm">Tick</span></li><li><span class="no">51</span><span class="app">Voice Recorder</span><span class="v v-opt">Your call</span></li><li><span class="no">52</span><span class="app">Wallet</span><span class="v v-rm">Tick</span></li><li><span class="no">53</span><span class="app">Weather</span><span class="v v-rm">Tick</span></li><li><span class="no">54</span><span class="app">Windows Media Player (classic)</span><span class="v v-opt">Your call</span><span class="note">suggest removing it</span></li><li><span class="no">55</span><span class="app">Windows Media Player (modern)</span><span class="v v-opt">Your call</span><span class="note">suggest keeping it, unless you install VLC or mpv</span></li><li><span class="no">56</span><span class="app">Windows Terminal</span><span class="v v-keep">Leave</span><span class="note">needed for programming</span></li><li><span class="no">57</span><span class="app">WordPad</span><span class="v v-rm">Tick</span><span class="note">retired</span></li><li><span class="no">58</span><span class="app">Xbox Apps</span><span class="v v-keep">Leave</span><span class="note">would also remove the Xbox sign-in parts some games use; §4 removes only the Xbox app and Game Bar</span></li><li><span class="no">59</span><span class="app">Your Phone / Phone Link</span><span class="v v-rm">Tick</span><span class="note">keep only if you link your phone</span></li></ol></div></li>
+    <li class="item"><input type="checkbox" id="c1-8"><label for="c1-8"><span class="tag t-do">Do</span>Put <code>autounattend.xml</code> on the USB stick, using one of the two methods</label>
+      <div class="body"><p><b>Method A: standard stick</b> (Media Creation Tool, or Rufus in plain mode). Copy <code>autounattend.xml</code> to the root of the stick, next to <code>setup.exe</code>.</p><p><b>Method B: Ventoy stick.</b> Leave the ISO unchanged; Ventoy's auto-install plugin passes the file to Setup. Lay out the data partition like this:</p><div class="code"><pre>/ISO/Win11_25H2_x64.iso            &lt;- your ISO (any folder / name)
+/ventoy/script/autounattend.xml    &lt;- the generated answer file
+/ventoy/ventoy.json                &lt;- plugin config (create it)</pre></div><p>Create <code>/ventoy/ventoy.json</code>. Paths start at the root of the stick and must match your real file names. If a <code>ventoy.json</code> already exists, add the block to it. VentoyPlugson.exe → Auto Install Plugin does the same without editing JSON.</p><div class="code"><pre>{
+  "auto_install": [
+    {
+      "image": "/ISO/Win11_25H2_x64.iso",
+      "template": "/ventoy/script/autounattend.xml"
+    }
+  ]
+}</pre></div><p>Before you boot: update Ventoy to the latest version. With Secure Boot on, enroll Ventoy's key once: on the blue MOK screen choose Enroll key from disk → VTOYEFI → ENROLL_THIS_KEY_IN_MOKMANAGER.cer → Continue → Yes → Reboot. Some PCs also need "Allow Microsoft 3rd Party UEFI CA" in the firmware. If it still won't boot, turn Secure Boot off for the install only and back on right after.</p></div></li>
+  </ul>
+  <div class="donts"><strong>Don't tick</strong><ul>
+    <li>Remove Microsoft Store (it also updates Notepad, Paint, Terminal, winget and codecs)</li>
+    <li>Disable Defender, Windows Update, SmartScreen, UAC or Smart App Control, or pause updates</li>
+    <li><b>"Xbox Apps"</b>, which also removes Xbox Identity Provider and TCUI. Step 04 removes only the Xbox app and Game Bar.</li>
+    <li>Remove WebView2, or bypass the TPM, Secure Boot and CPU checks</li>
+  </ul></div>
+</section>
+
+<section class="step" id="s2" data-title="Install">
+  <div class="sec-head"><span class="sec-no">02</span><h2>Install</h2><span class="sec-count"></span></div>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c2-1"><label for="c2-1"><span class="tag t-do">Do</span>Unplug Ethernet and don't connect to Wi-Fi</label></li>
+    <li class="item"><input type="checkbox" id="c2-2"><label for="c2-2"><span class="tag t-do">Do</span>Boot from the USB stick, delete every partition on the target disk, and install to the unallocated space</label>
+      <div class="body"><p>Method A: Setup picks up the file automatically. Method B (Ventoy): select the ISO, then choose the <code>/ventoy/script/autounattend.xml</code> template in Ventoy's menu, not "Boot without auto installation template".</p><p>Leave every other disk alone. With Ventoy, the USB stick itself also appears in the disk list.</p></div></li>
+    <li class="item"><input type="checkbox" id="c2-3"><label for="c2-3"><span class="tag t-opt">Optional</span>Fallback if you get the Microsoft-account screen</label>
+      <div class="body"><p>This screen means the answer file wasn't used. With Ventoy, check the paths in <code>ventoy.json</code>. To finish anyway, choose Set up for work or school → Sign-in options → Domain join instead.</p></div></li>
+  </ul>
+</section>
+
+<section class="step" id="s3" data-title="First boot">
+  <div class="sec-head"><span class="sec-no">03</span><h2>First boot, in this order</h2><span class="sec-count"></span></div>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c3-9"><label for="c3-9"><span class="tag t-do">Do</span>Check that the answer file ran</label>
+      <div class="body"><p>You should never have seen a Microsoft-account screen, and these logs should exist: <code>C:\Windows\Setup\Scripts\Specialize.log</code>, <code>DefaultUser.log</code> and <code>FirstLogon.log</code>. If they're missing, the generator's tweaks didn't run, but step 04 onwards still covers the essentials.</p></div></li>
+    <li class="item"><input type="checkbox" id="c3-1"><label for="c3-1"><span class="tag t-do">Do</span>Create a restore-point baseline (admin PowerShell)</label>
+      <div class="body"><div class="code"><pre>Enable-ComputerRestore -Drive "C:\"
+Checkpoint-Computer -Description "Clean install" -RestorePointType MODIFY_SETTINGS</pre></div></div></li>
+    <li class="item"><input type="checkbox" id="c3-2"><label for="c3-2"><span class="tag t-do">Do</span>Set your real country and regional format</label>
+      <div class="body"><p>Settings → Time &amp; language → Language &amp; region → Country or region. The device region stays EEA, which is what you want.</p></div></li>
+    <li class="item"><input type="checkbox" id="c3-3"><label for="c3-3"><span class="tag t-do">Do</span>Install the network driver, then the chipset and GPU drivers from the vendor</label></li>
+    <li class="item"><input type="checkbox" id="c3-4"><label for="c3-4"><span class="tag t-do">Do</span>Run Windows Update until nothing is left</label></li>
+    <li class="item"><input type="checkbox" id="c3-5"><label for="c3-5"><span class="tag t-do">Do</span>Microsoft Store → Library → Get updates</label></li>
+    <li class="item"><input type="checkbox" id="c3-6"><label for="c3-6"><span class="tag t-do">Do</span>Check that Windows Security is all green</label>
+      <div class="body"><p>Real-time protection, cloud protection and tamper protection on. Reputation-based protection on. <b>Core isolation → Memory integrity on</b>, since anti-cheat increasingly requires it.</p></div></li>
+    <li class="item"><input type="checkbox" id="c3-7"><label for="c3-7"><span class="tag t-do">Do</span>Turn on BitLocker for C: and store the recovery key off the PC</label></li>
+    <li class="item"><input type="checkbox" id="c3-8"><label for="c3-8"><span class="tag t-do">Do</span>Confirm activation</label>
+      <div class="body"><p>Settings → System → Activation should say "active with a digital license".</p></div></li>
+  </ul>
+</section>
+
+<section class="step" id="s4" data-title="Apps">
+  <div class="sec-head"><span class="sec-no">04</span><h2>Remove leftover inbox apps</h2><span class="sec-count"></span></div>
+  <p class="why">Run this in Windows PowerShell 5.1 as admin. It removes exact package names only and skips any that aren't installed.</p>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c4-1"><label for="c4-1"><span class="tag t-do">Do</span>Run the removal block</label>
+      <div class="body"><div class="code"><pre># Apps to remove (exact package names). Missing ones are simply skipped.
+$remove = @(
+  'Clipchamp.Clipchamp',
+  'Microsoft.BingNews', 'Microsoft.BingWeather', 'Microsoft.BingSearch',
+  'Microsoft.MicrosoftOfficeHub',        # "Microsoft 365 Copilot" app
+  'Microsoft.Copilot',                   # Copilot app
+  'Microsoft.OutlookForWindows',         # new Outlook
+  'MSTeams',
+  'Microsoft.Todos',
+  'Microsoft.PowerAutomateDesktop',
+  'Microsoft.MicrosoftSolitaireCollection',
+  'Microsoft.GetHelp',
+  'Microsoft.Getstarted',                # Tips
+  'Microsoft.WindowsFeedbackHub',
+  'Microsoft.WindowsMaps',
+  'Microsoft.Windows.DevHome',           # retired in 2025
+  'Microsoft.GamingApp',                 # Xbox app (you use Steam/Epic)
+  'Microsoft.XboxGamingOverlay'          # Game Bar
+)
+
+foreach ($name in $remove) {
+  Get-AppxPackage -AllUsers -Name $name | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+  Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq $name |
+    Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+}</pre></div><p>Optional extras: <code>MicrosoftCorporationII.QuickAssist</code>, <code>Microsoft.YourPhone</code>, <code>MicrosoftWindows.CrossDevice</code>, <code>Microsoft.ZuneMusic</code>, <code>Microsoft.WindowsSoundRecorder</code>, <code>Microsoft.WindowsAlarms</code>, <code>Microsoft.MicrosoftStickyNotes</code>.</p></div></li>
+    <li class="item"><input type="checkbox" id="c4-2"><label for="c4-2"><span class="tag t-do">Do</span>Check Settings → Apps → Installed apps</label>
+      <div class="body"><p>Uninstall anything the script missed from here, such as Copilot or "Web Search from Microsoft Bing".</p></div></li>
+    <li class="item"><input type="checkbox" id="c4-3"><label for="c4-3"><span class="tag t-do">Do</span>Remove OneDrive if it's still installed</label>
+      <div class="body"><div class="code"><pre>winget uninstall --id Microsoft.OneDrive</pre></div></div></li>
+    <li class="item"><input type="checkbox" id="c4-4"><label for="c4-4"><span class="tag t-do">Do</span>Stop the "ms-gamingoverlay" pop-up now that Game Bar is gone</label>
+      <div class="body"><div class="code"><pre>reg add "HKCU\System\GameConfigStore" /v GameDVR_Enabled /t REG_DWORD /d 0 /f
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" /v AppCaptureEnabled /t REG_DWORD /d 0 /f</pre></div><p>Game Mode is not affected. <span class="warn">⚠</span> These are community-documented values.</p></div></li>
+    <li class="item"><input type="checkbox" id="c4-5"><label for="c4-5"><span class="tag t-opt">Optional</span>Uninstall Edge (possible because of the EEA region)</label>
+      <div class="body"><p>Install and set your default browser first, e.g. <code>winget install --id Mozilla.Firefox</code>. Keep the WebView2 Runtime.</p></div></li>
+  </ul>
+  <div class="donts"><strong>Keep</strong><ul>
+    <li><code>WindowsStore</code>, <code>StorePurchaseApp</code>, <code>DesktopAppInstaller</code> (winget), <code>SecHealthUI</code></li>
+    <li>Framework packages (VCLibs, UI.Xaml, NET.Native, WindowsAppRuntime) and codecs (HEIF, HEVC, VP9, WebP, AV1, Raw)</li>
+    <li><code>XboxIdentityProvider</code>, <code>Xbox.TCUI</code>, the WebView2 Runtime, Terminal, Notepad, Paint, Snipping Tool and Photos</li>
+  </ul></div>
+</section>
+
+<section class="step" id="s5" data-title="Telemetry">
+  <div class="sec-head"><span class="sec-no">05</span><h2>Telemetry</h2><span class="sec-count"></span></div>
+  <p class="why">On Pro, the lowest diagnostic data level is "Required" (<code>AllowTelemetry=1</code>). Setting it to 0 does nothing on Pro. Everything optional can be turned off.</p>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c5-1"><label for="c5-1"><span class="tag t-do">Do</span>Diagnostics &amp; feedback</label>
+      <div class="body"><p>Turn off optional diagnostic data, inking and typing, and viewing diagnostic data. Click Delete diagnostic data. Set Feedback frequency to Never.</p></div></li>
+    <li class="item"><input type="checkbox" id="c5-2"><label for="c5-2"><span class="tag t-do">Do</span>Turn off activity history, online speech recognition, and inking &amp; typing personalization</label></li>
+    <li class="item"><input type="checkbox" id="c5-3"><label for="c5-3"><span class="tag t-do">Do</span>Search: turn off cloud content search. Turn off Find my device.</label></li>
+    <li class="item"><input type="checkbox" id="c5-4"><label for="c5-4"><span class="tag t-do">Do</span>Apply the Pro policies (admin PowerShell, or the same settings in gpedit)</label>
+      <div class="body"><div class="code"><pre>$dc = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+reg add $dc /v AllowTelemetry /t REG_DWORD /d 1 /f
+reg add $dc /v DisableTelemetryOptInSettingsUx /t REG_DWORD /d 1 /f
+reg add $dc /v DisableDiagnosticDataViewer /t REG_DWORD /d 1 /f
+reg add $dc /v DoNotShowFeedbackNotifications /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Windows\CloudContent" /v DisableTailoredExperiencesWithDiagnosticData /t REG_DWORD /d 1 /f
+$sys = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System'
+reg add $sys /v EnableActivityFeed /t REG_DWORD /d 0 /f
+reg add $sys /v PublishUserActivities /t REG_DWORD /d 0 /f
+reg add $sys /v UploadUserActivities /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\InputPersonalization" /v AllowInputPersonalization /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\TextInput" /v AllowLinguisticDataCollection /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo" /v DisabledByGroupPolicy /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v AllowCloudSearch /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\FindMyDevice" /v AllowFindMyDevice /t REG_DWORD /d 0 /f</pre></div></div></li>
+    <li class="item"><input type="checkbox" id="c5-5"><label for="c5-5"><span class="tag t-opt">Optional</span>Turn off location and Windows Error Reporting</label>
+      <div class="body"><p><code>LocationAndSensors\DisableLocation=1</code> breaks automatic time zone. <code>Windows Error Reporting\Disabled=1</code>.</p></div></li>
+  </ul>
+  <div class="donts"><strong>Skip</strong><ul><li>Disabling the DiagTrack service (<span class="warn">⚠</span> undocumented and low value) or any other service. Blocking Microsoft servers with the hosts file or firewall.</li></ul></div>
+</section>
+
+<section class="step" id="s6" data-title="Ads">
+  <div class="sec-head"><span class="sec-no">06</span><h2>Ads and suggestions</h2><span class="sec-count"></span></div>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c6-1"><label for="c6-1"><span class="tag t-do">Do</span>Privacy &amp; security → Recommendations &amp; offers: turn off all five toggles</label>
+      <div class="body"><p>On older builds they're under Privacy &amp; security → General, plus Tailored experiences.</p></div></li>
+    <li class="item"><input type="checkbox" id="c6-2"><label for="c6-2"><span class="tag t-do">Do</span>Privacy &amp; security → Search: turn off web and Store results, and search highlights</label></li>
+    <li class="item"><input type="checkbox" id="c6-3"><label for="c6-3"><span class="tag t-do">Do</span>Personalization → Start: turn off recommendations, account notifications, mobile device and websites</label></li>
+    <li class="item"><input type="checkbox" id="c6-4"><label for="c6-4"><span class="tag t-do">Do</span>Lock screen: Picture, tips off, status None. Background: not Spotlight.</label></li>
+    <li class="item"><input type="checkbox" id="c6-5"><label for="c6-5"><span class="tag t-do">Do</span>Taskbar: Widgets off, Search set to icon only or hidden</label></li>
+    <li class="item"><input type="checkbox" id="c6-6"><label for="c6-6"><span class="tag t-do">Do</span>Notifications → Additional settings: untick all three</label></li>
+    <li class="item"><input type="checkbox" id="c6-7"><label for="c6-7"><span class="tag t-do">Do</span>File Explorer options</label>
+      <div class="body"><p>Turn off the recommended section, Office.com files, and sync provider notifications.</p></div></li>
+    <li class="item"><input type="checkbox" id="c6-8"><label for="c6-8"><span class="tag t-do">Do</span>Apply the Pro policies</label>
+      <div class="body"><div class="code"><pre>reg add "HKLM\SOFTWARE\Policies\Microsoft\Dsh" /v AllowNewsAndInterests /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v EnableDynamicContentInWSB /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v HideRecommendedSection /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v HideRecommendedPersonalizedSites /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Windows\Explorer" /v DisableSearchBoxSuggestions /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Windows\CloudContent" /v DisableThirdPartySuggestions /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v AllowOnlineTips /t REG_DWORD /d 0 /f</pre></div><p><span class="warn">⚠</span> Microsoft's docs say <code>HideRecommendedSection</code> works on Pro. The audit confirms whether it did.</p></div></li>
+  </ul>
+  <div class="donts"><strong>Ignored on Pro, so don't bother</strong><ul><li>Consumer experiences, Windows tips, cloud optimized content, most Spotlight policies, DoNotUseWebResults, share-app promotions, DisableGetStarted.</li></ul></div>
+</section>
+
+<section class="step" id="s7" data-title="AI">
+  <div class="sec-head"><span class="sec-no">07</span><h2>AI features</h2><span class="sec-count"></span></div>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c7-1"><label for="c7-1"><span class="tag t-do">Do</span>Confirm Copilot and the Microsoft 365 Copilot app are gone</label>
+      <div class="body"><p>Check Settings → Apps → Installed apps and uninstall them there if needed. Skip <code>TurnOffWindowsCopilot</code> (deprecated) and <code>RemoveMicrosoftCopilotApp</code> (only works when Microsoft 365 is installed).</p></div></li>
+    <li class="item"><input type="checkbox" id="c7-2"><label for="c7-2"><span class="tag t-do">Do</span>Settings → Apps → Actions: turn everything off</label>
+      <div class="body"><p>This removes the "AI actions" entry from File Explorer's right-click menu.</p></div></li>
+    <li class="item"><input type="checkbox" id="c7-3"><label for="c7-3"><span class="tag t-do">Do</span>Privacy &amp; security → Text and image generation: off</label></li>
+    <li class="item"><input type="checkbox" id="c7-4"><label for="c7-4"><span class="tag t-do">Do</span>Apply the Paint, Notepad and AI-model policies</label>
+      <div class="body"><div class="code"><pre>$paint = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Paint'
+reg add $paint /v DisableCocreator /t REG_DWORD /d 1 /f
+reg add $paint /v DisableGenerativeFill /t REG_DWORD /d 1 /f
+reg add $paint /v DisableImageCreator /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Policies\WindowsNotepad" /v DisableAIFeatures /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" /v LetAppsAccessSystemAIModels /t REG_DWORD /d 2 /f
+# Copilot+ PCs only:
+# $ai = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI'
+# reg add $ai /v AllowRecallEnablement /t REG_DWORD /d 0 /f
+# reg add $ai /v DisableAIDataAnalysis /t REG_DWORD /d 1 /f
+# reg add $ai /v DisableClickToDo /t REG_DWORD /d 1 /f</pre></div><p><span class="warn">⚠</span> <code>LetAppsAccessSystemAIModels</code> is in Microsoft's policy template but not yet on Microsoft Learn.</p></div></li>
+    <li class="item"><input type="checkbox" id="c7-5"><label for="c7-5"><span class="tag t-opt">Optional</span>Remap the Copilot key</label>
+      <div class="body"><p>Personalization → Text input → Customize Copilot key.</p></div></li>
+    <li class="item"><input type="checkbox" id="c7-6"><label for="c7-6"><span class="tag t-opt">Optional</span>If you kept Edge: turn off Copilot and the sidebar</label>
+      <div class="body"><p>Edge → Settings → Copilot and sidebar. On a personal profile, the toolbar button can only be turned off by hand.</p></div></li>
+    <li class="item"><input type="checkbox" id="c7-7"><label for="c7-7"><span class="tag t-opt">Optional</span>Copilot+ PCs only: Recall, Click to Do and AI components</label>
+      <div class="body"><p>Uncomment the WindowsAI lines above, or run <code>Disable-WindowsOptionalFeature -Online -FeatureName Recall -Remove</code>. Also remove models under System → AI components.</p></div></li>
+    <li class="item"><input type="checkbox" id="c7-8"><label for="c7-8"><span class="tag t-opt">Optional</span>Block Copilot permanently with AppLocker (advanced)</label>
+      <div class="body"><p>Only needed if Copilot keeps coming back. <b>Create the default packaged-app rules first</b>, or every Store app gets blocked. Follow "Manage Copilot" on Microsoft Learn.</p></div></li>
+  </ul>
+</section>
+
+<section class="step" id="s8" data-title="Updates">
+  <div class="sec-head"><span class="sec-no">08</span><h2>Windows Update hygiene</h2><span class="sec-count"></span></div>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c8-1"><label for="c8-1"><span class="tag t-do">Do</span>Keep automatic updates on and set active hours</label></li>
+    <li class="item"><input type="checkbox" id="c8-2"><label for="c8-2"><span class="tag t-do">Do</span>"Get the latest updates as soon as they're available": off</label>
+      <div class="body"><p>This is how new features, often AI ones, arrive early. Security fixes still install.</p></div></li>
+    <li class="item"><input type="checkbox" id="c8-3"><label for="c8-3"><span class="tag t-do">Do</span>Delivery Optimization: HTTP only</label>
+      <div class="body"><div class="code"><pre>reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" /v DODownloadMode /t REG_DWORD /d 0 /f</pre></div><p>Never disable the DoSvc service or use mode 100.</p></div></li>
+    <li class="item"><input type="checkbox" id="c8-4"><label for="c8-4"><span class="tag t-opt">Optional</span>Stop Windows Update installing drivers</label>
+      <div class="body"><p>Set "Do not include drivers with Windows Updates" (<code>ExcludeWUDriversInQualityUpdate=1</code>). The trade-off: you then keep every driver up to date yourself.</p></div></li>
+    <li class="item"><input type="checkbox" id="c8-5"><label for="c8-5"><span class="tag t-opt">Optional</span>Install 26H2 when it's offered (expected October), then re-run the audit</label></li>
+  </ul>
+</section>
+
+<section class="step" id="s9" data-title="Dev">
+  <div class="sec-head"><span class="sec-no">09</span><h2>Programming</h2><span class="sec-count"></span></div>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c9-1"><label for="c9-1"><span class="tag t-do">Do</span>Settings → System → Advanced</label>
+      <div class="body"><p>Turn on long paths and sudo (in a new window). Turn on file extensions, hidden files, full path in the title bar and End task. Allow local PowerShell scripts and set Terminal as the default. Turn on Developer Mode only if you need it.</p><p>Avoid sudo's "Input closed" and "Inline" modes.</p></div></li>
+    <li class="item"><input type="checkbox" id="c9-2"><label for="c9-2"><span class="tag t-do">Do</span>Create a Dev Drive of at least 50 GB and use it instead of Defender exclusions</label>
+      <div class="body"><p>System → Storage → Advanced storage settings → Disks &amp; volumes → Create Dev Drive. Check it with <code>fsutil devdrv query D:</code>. Put repos, caches and build output there.</p>
+        <div class="tbl"><table class="mini"><tr><th>Variable</th><th>Value</th></tr>
+        <tr><td><code>npm_config_cache</code></td><td><code>D:\packages\npm</code></td></tr>
+        <tr><td><code>PIP_CACHE_DIR</code></td><td><code>D:\packages\pip</code></td></tr>
+        <tr><td><code>CARGO_HOME</code></td><td><code>D:\packages\cargo</code></td></tr>
+        <tr><td><code>NUGET_PACKAGES</code></td><td><code>D:\packages\nuget</code></td></tr>
+        <tr><td><code>GRADLE_USER_HOME</code></td><td><code>D:\packages\gradle</code></td></tr>
+        <tr><td><code>MAVEN_OPTS</code></td><td><code>-Dmaven.repo.local=D:\packages\maven</code></td></tr>
+        <tr><td><code>VCPKG_DEFAULT_BINARY_CACHE</code></td><td><code>D:\packages\vcpkg</code></td></tr></table></div>
+        <p>Don't use <code>/disallowAv</code>. Don't keep WSL projects on the Dev Drive.</p></div></li>
+    <li class="item"><input type="checkbox" id="c9-3"><label for="c9-3"><span class="tag t-do">Do</span>Install your tools with winget</label>
+      <div class="body"><div class="code"><pre>winget install --id Git.Git -e
+winget install --id Microsoft.PowerShell -e          # PowerShell 7
+winget install --id Microsoft.VisualStudioCode -e
+winget install --id Microsoft.PowerToys -e
+# add your stacks, e.g.: Python.Python.3.13, OpenJS.NodeJS.LTS, Microsoft.DotNet.SDK.9, Rustlang.Rustup</pre></div><p>If you install Python yourself, turn off the <code>python.exe</code> aliases in Settings → Apps → Advanced app settings → App execution aliases.</p></div></li>
+    <li class="item"><input type="checkbox" id="c9-4"><label for="c9-4"><span class="tag t-do">Do</span>Install WSL2</label>
+      <div class="body"><div class="code"><pre>wsl --install            # installs WSL + Ubuntu; reboot when asked
+wsl --update</pre></div><p>Optional: turn on mirrored networking in <code>%UserProfile%\.wslconfig</code>, then run <code>wsl --shutdown</code>.</p><div class="code"><pre>[wsl2]
+networkingMode=mirrored</pre></div></div></li>
+    <li class="item"><input type="checkbox" id="c9-5"><label for="c9-5"><span class="tag t-opt">Optional</span>Hyper-V and Windows Sandbox</label>
+      <div class="body"><div class="code"><pre>Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All      # Hyper-V
+Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM # Windows Sandbox</pre></div></div></li>
+  </ul>
+</section>
+
+<section class="step" id="s10" data-title="Gaming">
+  <div class="sec-head"><span class="sec-no">10</span><h2>Gaming</h2><span class="sec-count"></span></div>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c10-1"><label for="c10-1"><span class="tag t-do">Do</span>Game Mode on (the default)</label></li>
+    <li class="item"><input type="checkbox" id="c10-2"><label for="c10-2"><span class="tag t-do">Do</span>Hardware-accelerated GPU scheduling on</label>
+      <div class="body"><p>System → Display → Graphics. It's required for DLSS Frame Generation.</p></div></li>
+    <li class="item"><input type="checkbox" id="c10-3"><label for="c10-3"><span class="tag t-do">Do</span>Optimizations for windowed games on. VRR and Auto HDR on if your monitor supports them. Correct refresh rate.</label></li>
+    <li class="item"><input type="checkbox" id="c10-4"><label for="c10-4"><span class="tag t-do">Do</span>Balanced power plan, with the vendor chipset driver installed</label>
+      <div class="body"><p>High Performance gains about 0–2 FPS, and Ultimate Performance is no better.</p></div></li>
+    <li class="item"><input type="checkbox" id="c10-5"><label for="c10-5"><span class="tag t-do">Do</span>Keep TPM, Secure Boot, VBS with Memory integrity, IOMMU and Defender on</label>
+      <div class="body"><p>Riot Vanguard, FACEIT, EA Javelin (Battlefield 6) and Call of Duty require them. FACEIT requires Windows 11 from 14 Oct 2026.</p></div></li>
+    <li class="item"><input type="checkbox" id="c10-6"><label for="c10-6"><span class="tag t-do">Do</span>Put the Steam/Epic library on a normal NTFS drive, not the Dev Drive</label></li>
+  </ul>
+  <div class="donts"><strong>Avoid</strong><ul>
+    <li>HPET and bcdedit timer tweaks, Ultimate Performance, core-parking hacks</li>
+    <li>Turning off Defender, VBS or services, and hosts-file blocklists</li>
+    <li>AtlasOS, ReviOS, Tiny11 core, MicroWin and Win11 Creator ISOs</li>
+  </ul></div>
+</section>
+
+<section class="step" id="s11" data-title="Audit">
+  <div class="sec-head"><span class="sec-no">11</span><h2>Audit (read-only)</h2><span class="sec-count"></span></div>
+  <p class="why">Run this after setup and after every feature update. "Stopped" services are fine; only "Disabled" is a problem. If anything shows as RETURNED, repeat step 04. If anything shows as MISSING or WRONG, re-apply that section.</p>
+  <ul class="items">
+    <li class="item"><input type="checkbox" id="c11-1"><label for="c11-1"><span class="tag t-do">Do</span>Run the audit in admin Windows PowerShell</label>
+      <div class="body"><div class="code"><pre>Write-Host "`n== Core services (StartType must not be Disabled) ==" -ForegroundColor Cyan
+Get-Service wuauserv, UsoSvc, BITS, CryptSvc, DoSvc, WinDefend, SecurityHealthService, InstallService, AppXSvc, ClipSVC |
+  Select-Object Name, Status, StartType | Format-Table -AutoSize
+
+Write-Host "== Defender ==" -ForegroundColor Cyan
+Get-MpComputerStatus | Select-Object AMServiceEnabled, AntivirusEnabled, RealTimeProtectionEnabled, IsTamperProtected, AntivirusSignatureLastUpdated | Format-List
+
+Write-Host "== Secure Boot / TPM / VBS ==" -ForegroundColor Cyan
+"Secure Boot: " + (Confirm-SecureBootUEFI)
+Get-Tpm | Select-Object TpmPresent, TpmReady | Format-List
+$dg = Get-CimInstance -Namespace root\Microsoft\Windows\DeviceGuard -ClassName Win32_DeviceGuard
+"VBS running: " + ($dg.VirtualizationBasedSecurityStatus -eq 2)
+"Memory integrity (HVCI) running: " + ($dg.SecurityServicesRunning -contains 2)
+
+Write-Host "== Must be present ==" -ForegroundColor Cyan
+'Microsoft.WindowsStore','Microsoft.StorePurchaseApp','Microsoft.DesktopAppInstaller','Microsoft.SecHealthUI' | ForEach-Object {
+  "{0,-35} {1}" -f $_, [bool](Get-AppxPackage -Name $_) }
+
+Write-Host "== Must be absent (bloat) ==" -ForegroundColor Cyan
+$bloat = 'Clipchamp.Clipchamp','Microsoft.BingNews','Microsoft.BingWeather','Microsoft.BingSearch',
+  'Microsoft.MicrosoftOfficeHub','Microsoft.Copilot','Microsoft.OutlookForWindows','MSTeams','Microsoft.Todos',
+  'Microsoft.PowerAutomateDesktop','Microsoft.MicrosoftSolitaireCollection','Microsoft.GetHelp','Microsoft.Getstarted',
+  'Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Windows.DevHome','Microsoft.GamingApp','Microsoft.XboxGamingOverlay'
+$found  = @(Get-AppxPackage -AllUsers | Where-Object { $bloat -contains $_.Name } | Select-Object -ExpandProperty Name)
+$found += Get-AppxProvisionedPackage -Online | Where-Object { $bloat -contains $_.DisplayName } | Select-Object -ExpandProperty DisplayName
+if ($found) { $found | Sort-Object -Unique | ForEach-Object { "RETURNED: $_" } } else { "none - OK" }
+
+Write-Host "== Policies ==" -ForegroundColor Cyan
+$checks = @(
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection','AllowTelemetry',1),
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection','DoNotShowFeedbackNotifications',1),
+  @('HKCU:\Software\Policies\Microsoft\Windows\CloudContent','DisableTailoredExperiencesWithDiagnosticData',1),
+  @('HKCU:\Software\Policies\Microsoft\Windows\CloudContent','DisableThirdPartySuggestions',1),
+  @('HKCU:\Software\Policies\Microsoft\Windows\Explorer','DisableSearchBoxSuggestions',1),
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\System','EnableActivityFeed',0),
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo','DisabledByGroupPolicy',1),
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search','AllowCloudSearch',0),
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search','EnableDynamicContentInWSB',0),
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Dsh','AllowNewsAndInterests',0),
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer','HideRecommendedSection',1),
+  @('HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Paint','DisableCocreator',1),
+  @('HKLM:\SOFTWARE\Policies\WindowsNotepad','DisableAIFeatures',1),
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy','LetAppsAccessSystemAIModels',2),
+  @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization','DODownloadMode',0)
+)
+foreach ($c in $checks) {
+  $v = (Get-ItemProperty -Path $c[0] -Name $c[1] -ErrorAction SilentlyContinue).($c[1])
+  $state = if ($null -eq $v) { 'MISSING' } elseif ($v -eq $c[2]) { 'OK' } else { "WRONG ($v)" }
+  "{0,-8} {1}" -f $state, $c[1]
+}
+
+Write-Host "== Device region (EEA = Ireland is 68) ==" -ForegroundColor Cyan
+(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\DeviceRegion' -ErrorAction SilentlyContinue).DeviceRegion</pre></div></div></li>
+    <li class="item"><input type="checkbox" id="c11-2"><label for="c11-2"><span class="tag t-do">Do</span>Check that Store "Get updates" and "Check for updates" both still work</label></li>
+  </ul>
+</section>
+
+<footer>
+  <p>The full guide, with gpedit paths, a note on edition limits and dated sources, is in the project's <code>README.md</code>.</p>
+  <ul>
+    <li><a href="https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information" target="_blank" rel="noopener">Windows 11 release information</a> (updated 2026-09-22)</li>
+    <li><a href="https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-windowsai" target="_blank" rel="noopener">WindowsAI Policy CSP</a> (2026-09-23)</li>
+    <li><a href="https://learn.microsoft.com/en-us/windows/privacy/manage-connections-from-windows-operating-system-components-to-microsoft-services" target="_blank" rel="noopener">Manage connections from Windows components</a> (2026-02-13)</li>
+    <li><a href="https://learn.microsoft.com/en-us/windows/client-management/manage-windows-copilot" target="_blank" rel="noopener">Manage Copilot</a> (2026-08-18)</li>
+    <li><a href="https://learn.microsoft.com/en-us/windows/dev-drive/" target="_blank" rel="noopener">Dev Drive</a> (2026-06-01)</li>
+  </ul>
+  <button type="button" class="reset" id="reset">Clear all ticks</button>
+</footer>
+</div>
+
+<script>
+(function(){
+  var KEY='quiet-win11-checks-v1', state={};
+  try{ state=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ state={}; }
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+  var boxes=[].slice.call(document.querySelectorAll('li.item input[type=checkbox]'));
+  var sections=[].slice.call(document.querySelectorAll('section.step'));
+  var nav=document.getElementById('nav');
+  sections.forEach(function(s,i){
+    var a=document.createElement('a'); a.href='#'+s.id; a.textContent=String(i).padStart(2,'0')+' '+s.dataset.title; a.dataset.for=s.id; nav.appendChild(a);
+  });
+  function render(){
+    var done=0;
+    boxes.forEach(function(b){ b.checked=!!state[b.id]; b.closest('li').classList.toggle('checked',b.checked); if(b.checked)done++; });
+    document.getElementById('count').textContent=done+' / '+boxes.length;
+    document.getElementById('meter').style.width=(boxes.length?done/boxes.length*100:0)+'%';
+    sections.forEach(function(s){
+      var bs=s.querySelectorAll('li.item input'), d=0; bs.forEach(function(b){ if(b.checked)d++; });
+      s.querySelector('.sec-count').textContent=d+'/'+bs.length;
+      var link=nav.querySelector('[data-for="'+s.id+'"]'); if(link) link.classList.toggle('done',bs.length>0&&d===bs.length);
+    });
+  }
+  boxes.forEach(function(b){ b.addEventListener('change',function(){ if(b.checked)state[b.id]=1; else delete state[b.id]; save(); render(); }); });
+  document.querySelectorAll('.code').forEach(function(c){
+    var pre=c.querySelector('pre'), btn=document.createElement('button'); btn.type='button'; btn.textContent='Copy'; c.appendChild(btn);
+    btn.addEventListener('click',function(){
+      var done=function(){ btn.textContent='Copied'; setTimeout(function(){ btn.textContent='Copy'; },1500); };
+      var fallback=function(){ var r=document.createRange(); r.selectNodeContents(pre); var sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); btn.textContent='Selected, press Ctrl+C'; setTimeout(function(){ btn.textContent='Copy'; },2500); };
+      try{ navigator.clipboard.writeText(pre.textContent).then(done,fallback); }catch(e){ fallback(); }
+    });
+  });
+  var reset=document.getElementById('reset'), armed=false, t;
+  reset.addEventListener('click',function(){
+    if(!armed){ armed=true; reset.classList.add('arm'); reset.textContent='Click again to clear every tick'; t=setTimeout(function(){ armed=false; reset.classList.remove('arm'); reset.textContent='Clear all ticks'; },4000); return; }
+    clearTimeout(t); armed=false; state={}; save(); render(); reset.classList.remove('arm'); reset.textContent='All ticks cleared';
+    setTimeout(function(){ reset.textContent='Clear all ticks'; },2000);
+  });
+  render();
+})();
+</script>
